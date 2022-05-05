@@ -1,23 +1,17 @@
 import express from "express";
-import { send } from "process";
 import { prisma } from "./prisma";
+import nodemailer from "nodemailer";
 
 const app = express();
 app.use(express.json()); // Isso é chamado de midleware
 
-/* 
-Métodos API
-GET = Buscar Informações
-POST = Gravar informações
-PUT = Atualizar informações de uma entidade (Varias 
-    colunas de uma linha, ex.: Nome, Idade, Endereço)
-PATCH = Atualizar uma informação unica de uma entidade
-    (No exemplo acima seria como atualizar somente o nome)
-DELETE = Deletar uma informação
-*/
-
-app.get("/users", (req, res) => {
-    return res.send("Teste");
+const transport = nodemailer.createTransport({
+    host: "smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+        user: "5b4eca6d86ba21",
+        pass: "205d3a2262aa96",
+    },
 });
 
 app.post("/feedbacks", async (req, res) => {
@@ -31,7 +25,19 @@ app.post("/feedbacks", async (req, res) => {
         },
     });
 
+    await transport.sendMail({
+        from: "Equipe feedback <oi@email.com>",
+        to: "João Paulo <jp@gmail.com>",
+        subject: "Novo Feedback",
+        html: [
+            `<div style="font-family: sans-serif; font-size: 16px; color: #222;">`,
+            `<p>Tipo Feedback: ${type}</p>`,
+            `<p>Comentário: ${comment}</p>`,
+            `</div>`,
+        ].join(""),
+    });
+
     return res.status(201).json({ data: feedback });
 });
 
-app.listen(3333, () => console.log("tá rodando fdp"));
+app.listen(3333, () => console.log("Server ON"));
